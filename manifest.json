@@ -1,0 +1,40 @@
+{
+    "name": "Nom Notes",
+    "description": "Nom Notes. Capturing the web, one click at a time",
+    "version": "0.1",
+    "manifest_version": 2,
+    "minimum_chrome_version": "6",  
+
+    "background": {
+        "scripts": [
+            "js/background.js",
+            "js/jquery-3.0.0.min.js"
+        ]
+    },
+
+    "browser_action": {
+        "default_icon": "img/icon.png",
+        "default_popup":"popup.html"
+    },
+    
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                //"js/getdata.js",
+                //"js/getDOM.js",
+                "js/jquery-3.0.0.min.js",
+                "js/sendnote.js"//,
+               // "js/newmenu.js"
+            ]
+        }
+    ],
+    "permissions": [
+        "http://*/*",
+        "https://*/*",
+        "contextMenus",
+        "tabs"
+    ]
+}

@@ -1,85 +1,25 @@
+var serverUrl = 'http://mars-mac.local:5000';
+
 function sendNoteOnContextMenuClick(info, tab) {
     //console.log("item " + info.menuItemId + " was clicked");
-    //console.log("info: " + JSON.stringify(info));
-    //console.log("tab: " + JSON.stringify(tab));
-    var serverUrl = 'http://almostvindiesel.pythonanywhere.com/';
+    console.log("info: " + JSON.stringify(info));
+    console.log("tab: " + JSON.stringify(tab));
+    console.log("server: " + serverUrl);
+
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
         chrome.tabs.sendMessage(tabs[0].id, {action: "PostNoteToServer", info: info, tab: tab, serverUrl: serverUrl}, function(response) {});  
     });
 }
 
-function sendNoteOnContextMenuClickLocal(info, tab) {
-    var serverUrl = 'http://localhost:5000/';
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, {action: "PostNoteToServer", info: info, tab: tab, serverUrl: serverUrl}, function(response) {});  
-    });
-}
-
-function sendPageUrlOnContextMenuClick(info, tab) {
-    var serverUrl = 'http://almostvindiesel.pythonanywhere.com/';
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, {action: "PostPageUrlToServer", info: info, tab: tab, serverUrl: serverUrl}, function(response) {});  
-    });
-}
-
-function sendPageUrlOnContextMenuClickLocal(info, tab) {
-    var serverUrl = 'http://localhost:5000/';
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, {action: "PostPageUrlToServer", info: info, tab: tab, serverUrl: serverUrl}, function(response) {});  
-    });   
-}
 
 chrome.contextMenus.create({
-  title: "Save Highlight", 
-  //contexts:["selection"], 
+  title: "Save to itlyst", 
   contexts:["all"], 
   onclick: sendNoteOnContextMenuClick
 });
 
-chrome.contextMenus.create({
-  title: "Save Highlight (Local)", 
-  //contexts:["selection"], 
-  contexts:["all"], 
-  onclick: sendNoteOnContextMenuClickLocal
-});
-
-chrome.contextMenus.create({
-  title: "Save Page", 
-  //contexts:["selection"], 
-  contexts:["all"], 
-  onclick: sendPageUrlOnContextMenuClick
-});
-
-chrome.contextMenus.create({
-  title: "Save Page (Local)", 
-  //contexts:["selection"], 
-  contexts:["all"], 
-  onclick: sendPageUrlOnContextMenuClickLocal
-});
 
 
-
- //Attempt to Trigger a popup post highlight
-/*
-var cr= [];
-
-$(document).on({
-  'mouseup': function() {
-    cr= window.getSelection().getRangeAt(0).getClientRects();
-  },
-  'mousemove': function(ev) {
-    //hide the pop up
-    for(var i = 0 ; i < cr.length ; i++) {
-      if(ev.pageX >= cr[i].left && ev.pageX <= cr[i].right &&
-         ev.pageY >= cr[i].top  && ev.pageY <= cr[i].bottom
-        ) {
-            alert("triggered highlight");
-            break;
-      }
-    }
-  }
-});
-*/
 
 
 

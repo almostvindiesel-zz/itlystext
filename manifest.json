@@ -1,7 +1,7 @@
 {
-    "name": "Nom Notes",
-    "description": "Nom Notes. Capturing the web, one click at a time",
-    "version": "0.1",
+    "name": "It Lyst",
+    "description": "Simplifying Travel Planning",
+    "version": "0.2",
     "manifest_version": 2,
     "minimum_chrome_version": "6",  
 
@@ -12,8 +12,13 @@
         ]
     },
 
+    "icons": { 
+        "48": "img/itlyst-fork-logo-128x128-black.png",
+        "128": "img/itlyst-fork-logo-128x128-white.png" 
+    },
+
     "browser_action": {
-        "default_icon": "img/icon.png",
+        "default_icon": "img/itlyst-fork-logo-128x128-white.png",
         "default_popup":"popup.html"
     },
     
@@ -35,6 +40,6 @@
         "http://*/*",
         "https://*/*",
         "contextMenus",
-        "tabs"
+        "activeTab"
     ]
 }

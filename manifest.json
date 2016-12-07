@@ -13,7 +13,7 @@
     },
 
     "icons": { 
-        "48": "img/itlyst-fork-logo-128x128-black.png",
+        "48":  "img/itlyst-fork-logo-128x128-black.png",
         "128": "img/itlyst-fork-logo-128x128-white.png" 
     },
 
@@ -28,11 +28,9 @@
                 "<all_urls>"
             ],
             "js": [
-                //"js/getdata.js",
-                //"js/getDOM.js",
                 "js/jquery-3.0.0.min.js",
-                "js/sendnote.js"//,
-               // "js/newmenu.js"
+                "js/sendnote.js",
+                "js/lyster.js"
             ]
         }
     ],

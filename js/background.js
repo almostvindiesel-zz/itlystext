@@ -1,15 +1,16 @@
-var serverUrl = 'http://mars-mac.local:5000';
+console.log("Loading background.js...");
 
-function sendNoteOnContextMenuClick(info, tab) {
-    //console.log("item " + info.menuItemId + " was clicked");
-    console.log("info: " + JSON.stringify(info));
-    console.log("tab: " + JSON.stringify(tab));
-    console.log("server: " + serverUrl);
 
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
-        chrome.tabs.sendMessage(tabs[0].id, {action: "PostNoteToServer", info: info, tab: tab, serverUrl: serverUrl}, function(response) {});  
-    });
-}
+//var apiUrl = 'http://mars.local:5000';
+var apiUrl  = 'http://www.itlyst.com';
+var webUrl  = 'http://itlystweb.herokuapp.com';
+
+
+// Update Login url on popup
+//var a = document.getElementById('loginUrl'); //or grab it by tagname etc
+//a.href = 
+
+
 
 
 chrome.contextMenus.create({
@@ -19,8 +20,16 @@ chrome.contextMenus.create({
 });
 
 
+function sendNoteOnContextMenuClick(info, tab) {
+    //console.log("item " + info.menuItemId + " was clicked");
+    //console.log("info: " + JSON.stringify(info));
+    //console.log("tab: " + JSON.stringify(tab));
+    //console.log("server: " + apiUrl);
 
-
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs){
+        chrome.tabs.sendMessage(tabs[0].id, {action: "processNote", info: info, tab: tab, apiUrl: apiUrl}, function(response) {});  
+    });
+}
 
 
 // Called After the Content Script Sends Data back to background.js to send to the server
@@ -28,6 +37,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
 
     //Send data to Server from content script injection
     if (request.action == "xhttp") {
+        console.log("~~~~~~~~~~~~~~~~~~> does this ever come up")
         //alert("read request");
         var xhttp = new XMLHttpRequest();
         var method = request.method ? request.method.toUpperCase() : 'GET';
@@ -36,8 +46,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, callback) {
             callback(xhttp.responseText);
         };
         xhttp.onerror = function() {
-            // Do whatever you want on error. Don't forget to invoke the
-            // callback to clean up the communication port.
             callback();
         };
         xhttp.open(method, request.url, true);

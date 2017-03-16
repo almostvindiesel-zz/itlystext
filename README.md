@@ -1,1 +1,1 @@
-Nom Nomes Chrome Extension
+It Lyst Chrome Extension

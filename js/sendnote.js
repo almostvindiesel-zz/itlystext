@@ -1,21 +1,19 @@
-/*
-Resolve latitude and longitude
-view-source:https://www.tripadvisor.com/Attraction_Review-g1759888-d6601942-Reviews-River_Buna_Spring-Blagaj_Herzegovina_Neretva_Canton.html
-- lat: 43.259995
-- lng: 17.882998
-*/
+console.log("Loading sendnote.js...");
+
 
 
 chrome.extension.onMessage.addListener(function(msg, sender, sendResponse) {
    if (msg.action == 'processNote') {
-      postNoteToServer(msg.info, msg.tab, msg.serverUrl);
+      processNote(msg.info, msg.tab, msg.apiUrl);
    }
+
 });
 
 
 
+
 //Send the selected note and related page attributes to the note and other related tables
-var processNote = function (info, tab, serverUrl)  {
+var processNote = function (info, tab, apiUrl)  {
 
 	console.log("-----------------------------------------------");
 
@@ -52,8 +50,9 @@ var processNote = function (info, tab, serverUrl)  {
 			v.setCity();
 			v.setRating();
 			v.setReviews();
+			//v.simplifyPageUrl();
 			//v.setCategories();
-			saveVenueNoteToServer(serverUrl, v);
+			saveVenueNoteToServer(apiUrl, v);
 			break;
 		case 'tripadvisor':
 			v = new TripadvisorVenue(p);
@@ -66,7 +65,8 @@ var processNote = function (info, tab, serverUrl)  {
 			v.setRating();
 			v.setReviews();
 			//v.setCategories();
-			saveVenueNoteToServer(serverUrl, v);
+			//v.simplifyPageUrl();
+			saveVenueNoteToServer(apiUrl, v);
 			break;
 		case 'yelp':
 			v = new YelpVenue(p);
@@ -79,15 +79,16 @@ var processNote = function (info, tab, serverUrl)  {
 			v.setRating();
 			v.setReviews();
 			//v.setCategories();
-			saveVenueNoteToServer(serverUrl, v);
+			v.simplifyPageUrl();
+			saveVenueNoteToServer(apiUrl, v);
 			break;
 		default:
 			console.log("Unknown source. Just submitting page");
-			savePageNoteToServer(serverUrl, p);
+			savePageNoteToServer(apiUrl, p);
 	}
 }
 
-var savePageNoteToServer = function (serverUrl, page) {
+var savePageNoteToServer = function (apiUrl, page) {
 	var post_params = { 
 			"page_url": page.url,
 			"page_title": page.title,
@@ -99,10 +100,13 @@ var savePageNoteToServer = function (serverUrl, page) {
 	console.log("- Post Parameters: ");
 	console.log(post_params);
 
+
+
+
 	chrome.runtime.sendMessage({
 	    method: 'POST',
 	    action: 'xhttp',
-	    url: serverUrl + "/addnote",
+	    url: apiUrl + "/addnote",
 	    data: jQuery.param(post_params),
 	    contentType: 'application/json',
         dataType : 'json'
@@ -110,11 +114,12 @@ var savePageNoteToServer = function (serverUrl, page) {
 	    alert(responseText);
 
 	});
+	
 }
 
 
 
-var saveVenueNoteToServer = function (serverUrl, venue) {
+var saveVenueNoteToServer = function (apiUrl, venue) {
 	var post_params = { 
 		"source_id": venue.source_id,
 		"source": venue.source,
@@ -136,19 +141,105 @@ var saveVenueNoteToServer = function (serverUrl, venue) {
     };
 	console.log("- Post Parameters: ");
 	console.log(post_params);
+	console.log(jQuery.param(post_params));
+	console.log("Posting to " + apiUrl + "/addnote");
 
+	//Create Overlay
+	var div = document.createElement("div");
+    div.id = "itlyst_status_overlay"
+    div.style.width = "300px";
+    div.style.height = "200px";
+    div.style.position = "fixed";
+    div.style.display = "block";
+    div.style.backgroundColor = "#eef4ff";
+    div.style.border = "thin solid #0000FF";
+    div.style.borderRadius = "5px";
+    div.style.top = "10px";
+    div.style.right = "10px";
+    div.style.zIndex = 90000000;
+
+    //Create message to enduser
+	var itlyst_img_url = chrome.extension.getURL("/img/itlyst-fork-logo-128x128-black.png");
+    var divmessage = document.createElement("div");
+    divmessage.fontcolor = "black";
+    divmessage.id = "itlyst_msg";
+    divmessage.innerHTML = "<b><img src='"+itlyst_img_url+"' height='20px'> Saving to itlyst...</b><br>";
+    divmessage.style.padding = "5px 5px 5px 5px";
+
+    //Append to dom in webpage
+    div.appendChild(divmessage);
+    document.body.appendChild(div);
+
+    
+
+	
 	chrome.runtime.sendMessage({
 	    method: 'POST',
 	    action: 'xhttp',
-	    url: serverUrl + "/addnote",
+	    url: apiUrl + "/addnote",
 	    data: jQuery.param(post_params),
+	    //data: post_params,
 	    contentType: 'application/json',
         dataType : 'json'
 	}, function(responseText) {
-	    alert(responseText);
+	    //alert(responseText);
+	    console.log(responseText);
+	    responseJson = JSON.parse(responseText);
+
+	    var divmessage = document.getElementById("itlyst_msg");
+	    divmessage.innerHTML = "<b><img src='"+itlyst_img_url+"' height='20px'> Saved</b>";
+	    divmessage.innerHTML += " for " + responseJson.venue_name + "<br><br>";
+	    if (responseJson.hasOwnProperty(responseJson.note)) {
+	    	if (responseJson.note.length >  100) {
+	    		var display_note = responseJson.note.substr(0, 100) + "...";
+	    	}
+	    	else {
+	    		var display_note = responseJson.note;
+	    	}
+	    	divmessage.innerHTML += "<i>" + display_note + "</i>";
+	    }
+
+	    if (responseJson.hasOwnProperty('user_image_id')) {
+	    	divmessage.innerHTML += "<br><img src=" + post_params.image_url + " height='100px'>";
+	    }
+
+	    //Remove the overlay
+	    
+	    setTimeout(function(){ 
+	    	var ele = document.getElementById("itlyst_status_overlay");
+			ele.parentNode.removeChild(ele);
+	    }, 2000)
+	    
+	    
+
+	    
+	    //console.log("user image id: " + responseJson['user_image_id']);
+	    if ( responseJson.hasOwnProperty('user_image_id') ) {
+	    	console.log("Found image id. Sending to s3 for resizing..." );
+	    	new_image_id = responseJson['user_image_id'];
+
+	    	console.log("New image_id: " + new_image_id);
+
+		    chrome.runtime.sendMessage({
+			    method: 'PUT',
+			    action: 'xhttp',
+			    url: apiUrl + "/api/v1/image/" + new_image_id,
+			    contentType: 'application/json',
+		        dataType : 'json'
+			}, function(responseText) {
+				console.log(responseText);
+			    //alert(responseText);
+			    //var overlay = jQuery('<div id="itlystoverlay" style="position:absolute; top:10px; right: 10px; background-color: #fff; font-weight: bold; ">hellomynameisjoe</div>');
+				//overlay.appendTo(document.body)
+			});
+		}
+
+
 	    //var overlay = jQuery('<div id="itlystoverlay" style="position:absolute; top:10px; right: 10px; background-color: #fff; font-weight: bold; ">hellomynameisjoe</div>');
 		//overlay.appendTo(document.body)
 	});
+	
+	
 }
 
     
